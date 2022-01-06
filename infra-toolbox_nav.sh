@@ -146,6 +146,9 @@ function venv() {
     go)
       _venv_go "$@"
       ;;
+    help|info|usage)
+      _venv_usage
+      ;;
     *)
       echo "ERROR: Unknown command '$command'"
       ;;
@@ -168,6 +171,26 @@ function _venv_autocomplete {
   mapfile -t COMPREPLY < <(compgen -W "${_PROJECT_OPTIONS[*]}" "${word_being_completed}")
 }
 complete -o default -o bashdefault -F _venv_autocomplete venv
+
+
+function _venv_usage() {
+  cat <<"EOF"
+Usage:
+  venv [info | help | usage]  Display this help
+  venv go COMPONENT           Change directories and venvs to the given COMPONENT (which is auto-completeable)
+  venv on [refresh]           Activate "nearest" venv (based on your current dir).
+                                 'refresh' forces the venv to be recreated.
+  venv off                    Deactivate the current venv
+  venv destroy                Deactivate and delete the current venv
+
+  cdd COMPONENT               Change directories to the given COMPONENT (which is auto-completeable)
+  cdtop                       Change directories to this repo's top level
+  cdapps                      Change directories to $REPO/apps
+  cdlibs                      Change directories to $REPO/libs
+  cdpylibs                    Change directories to the venv's lib/site-packages dir
+  cdpylibs64                  Change directories to the venv's lib64/site-packages dir
+EOF
+}
 
 
 # Finds the nearest project directory (or the Repo's Active Project if not found) and activates the venv.
@@ -282,6 +305,19 @@ function cdpylibs() {
     return
   fi
   local - dir="${VIRTUAL_ENV}/lib/python3.9/site-packages"
+  if [[ -d $dir ]]; then
+    cd "${dir}"
+  else
+    echo "ERROR: ${dir} does not exist"
+  fi
+}
+
+function cdpylibs64() {
+  if [[ -z $VIRTUAL_ENV ]] ; then
+    echo "ERROR: No virtualenv is currently activated."
+    return
+  fi
+  local - dir="${VIRTUAL_ENV}/lib64/python3.9/site-packages"
   if [[ -d $dir ]]; then
     cd "${dir}"
   else
@@ -419,6 +455,7 @@ function _activate_poetry_project_venv() {
 
   # Create virtualenv if it doesn't exist
   if [[ ! -d $venv_path ]]; then
+    echo "$venv_path is not a directory, so creating the venv:"
     virtualenv --python="$(which python3)" "${venv_path}"
   fi
 
