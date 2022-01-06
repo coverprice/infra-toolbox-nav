@@ -18,6 +18,33 @@ infra-toolbox repo(s), and managing the state of Python virtualenvs therein.
 [[ -f /path/to//infra-tools_nav.sh ]] && source /path/to/infra-tools_nav.sh
 ```
 
+4. **Optional**: Update your Bash prompt to display the current venv.
+
+Consider this as sample code; adapt it for your environment.
+
+In your `~/.bashrc` add:
+
+```bash
+function prompt_update() {
+  local branch git_top repo_name git_branch_prompt
+  _ACTIVE_PROJECT_PROMPT=
+  git_top="$(git rev-parse --show-toplevel 2>/dev/null)"
+  if [[ -n $git_top ]] ; then
+    repo_name="$(basename "$(dirname "${git_top}")")"
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+    git_branch_prompt="$(printf "%s[%s%s %s%s] " "${COLOR_WHITE}" "${COLOR_RESET}" "${repo_name}" "${COLOR_WHITE}" "${branch}")"
+  fi
+  if [[ -n $git_top ]] && [[ $(type -t _active_project_prompt) == "function" ]]; then
+     # Needs to be done outside of a sub-shell as it modifies vars
+     _active_project_prompt "${git_top}"
+  fi
+  PS1="${git_branch_prompt}${_ACTIVE_PROJECT_PROMPT}${COLOR_GREEN}[${COLOR_LIGHT_GRAY}\\u ${COLOR_GREEN}${PWD/#${HOME}/\~}${COLOR_LIGHT_BLUE}]${COLOR_RESET}\\$ "
+}
+
+PROMPT_COMMAND=prompt_update
+```
+
+
 ## Usage
 
 ### Cross repo commands
