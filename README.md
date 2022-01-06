@@ -10,9 +10,9 @@ infra-toolbox repo(s), and managing the state of Python virtualenvs therein.
    repos are stored, e.g. `${HOME}/myrepos`. (Each repo is expected to be under its own directory
    e.g. `$HOME/myrepos/repo1/infra-toolbox/.git`, `$HOME/myrepos/anotherrepo/infra-toolbox/.git`, ... )
 
-2. Make sure virtualenv is installed.
+2. Make sure virtualenv is installed. (`pip install --user virtualenv`). You do *not* need to install `virtualenvwrappers`.
 
-3. Add this script to your .bashrc:
+3. Add this script to your `~/.bashrc`:
 
 ```
 [[ -f /path/to//infra-tools_nav.sh ]] && source /path/to/infra-tools_nav.sh
