@@ -9,9 +9,7 @@
 #    e.g. $HOME/myrepos/repo1/infra-toolbox/.git , $HOME/myrepos/anotherrepo/infra-toolbox/.git, ...
 #    These repos will be referred to in commands as `repo1` and `anotherrepo`
 #
-# 2) Make sure virtualenv and virtualenv wrapper are installed and set up.
-#
-# 3) Add this script to your .bashrc:
+# 2) Add this script to your .bashrc:
 #   [[ -f /path/to/this/script.sh ]] && source /path/to/this/script.sh
 #
 #
@@ -431,7 +429,7 @@ function _get_nearest_poetry_project_dir() {
 #  The path to the activated project will be put into $_GIT_TOP/.venv
 function _activate_poetry_project_venv() {
   local project_dir="${1}" refresh="${2}"
-  local venv_path
+  local venv_path was_venv_created=false
 
   if [[ ! -d $project_dir ]]; then
     echo "ERROR: Not a project directory: ${project_dir}"
@@ -456,11 +454,15 @@ function _activate_poetry_project_venv() {
   # Create virtualenv if it doesn't exist
   if [[ ! -d $venv_path ]]; then
     echo "$venv_path is not a directory, so creating the venv:"
-    virtualenv --python="$(which python3)" "${venv_path}"
+    python3 -m venv "${venv_path}"
+    was_venv_created=true
   fi
 
   echo -n "${project_dir}" > "${_GIT_TOP}/.venv"
   source "${venv_path}/bin/activate"
+  if $was_venv_created ; then
+    pip3 install --upgrade pip
+  fi
 }
 
 
