@@ -413,7 +413,8 @@ complete -o default -o bashdefault -F _cdd_autocomplete cdd
 
 
 # Purpose: Determines various attributes of the repo pointed to by the current directory.
-# INPUT: None
+# INPUT:
+#   $1 - str "silent" if present, do not output any errors, just exit silently
 # OUTPUT:
 #   @return
 #      _GIT_TOP - envvar string - Path to top directory of current git repo. Empty if not in a git repo.
@@ -423,22 +424,32 @@ complete -o default -o bashdefault -F _cdd_autocomplete cdd
 #           active project. (This doesn't mean the project's venv exists or is activated, it means it *should* exist
 #           and be activated)
 function _get_git_top() {
+  local output_errors
   unset _GIT_TOP
   unset _IS_MONOREPO
   unset _REPO_METADATA_PATH
   unset _REPO_ACTIVE_PROJECT_DIR
-  _get_git_top_silent
+
+  if [[ $1 == "silent" ]]; then
+    output_errors=false
+  else
+    output_errors=true
+  fi
+  _GIT_TOP="$(git rev-parse --path-format=absolute --show-toplevel 2>/dev/null)"
+
   if [[ -z $_GIT_TOP ]] ; then
-    echo "ERROR: Currently not in a git repo"
+    $output_errors && echo "ERROR: Currently not in a git repo"
+    return
   fi
   if [[ "${_GIT_TOP#"${REPO_HOME}/"}" == "${_GIT_TOP}" ]] ; then
     unset _GIT_TOP
-    echo "ERROR: Git repo not currently under dir: ${REPO_HOME}"
+    $output_errors && echo "ERROR: Git repo not currently under dir: ${REPO_HOME}"
     return
   fi
 
   if [[ -z $VENV_HOME ]] ; then
-    echo "ERROR: VENV_HOME not set"
+    $output_errors && echo "ERROR: VENV_HOME not set"
+    return
   fi
 
   if [[ -d "${_GIT_TOP}/apps/atlas" ]] ; then
@@ -456,9 +467,6 @@ function _get_git_top() {
   if [[ -f $active_project_store ]]; then
     _REPO_ACTIVE_PROJECT_DIR="$(<"${active_project_store}")"
   fi
-}
-function _get_git_top_silent() {
-  _GIT_TOP="$(git rev-parse --path-format=absolute --show-toplevel 2>/dev/null)"
 }
 
 
@@ -610,7 +618,7 @@ function _destroy_venv_dir() {
 # creates a new pane in the current directory, which by default won't inherit
 # the current virtualenv environment.
 function _venv_auto_activate() {
-  _get_git_top_silent
+  _get_git_top silent
   [[ -z $_GIT_TOP ]] && return
 
   if [[ -n $_REPO_METADATA_PATH ]] && [[ -n $_REPO_ACTIVE_PROJECT_DIR ]]; then
