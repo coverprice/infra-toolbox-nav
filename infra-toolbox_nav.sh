@@ -84,7 +84,7 @@
 #   repo myrepo
 function repo() {
   local - reponame=$1 repodir
-  set -e
+  set -o errexit
   if [[ -z $REPO_HOME ]] ; then
     echo "ERROR: REPO_HOME not defined"
     return
@@ -113,7 +113,9 @@ function repo() {
   fi
 
   # Attempt to activate a venv
+  set +o errexit
   _venv_on
+  set -o errexit
   if [[ -n $_GIT_TOP ]] && [[ -n $_REPO_ACTIVE_PROJECT_DIR ]] ; then
     cd "${_GIT_TOP}/${_REPO_ACTIVE_PROJECT_DIR}"
   fi
