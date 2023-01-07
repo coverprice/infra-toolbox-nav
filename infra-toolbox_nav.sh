@@ -174,7 +174,7 @@ function venv() {
     go)
       _venv_go "$@"
       ;;
-    help|info|usage)
+    -h|--help|help|info|usage)
       _venv_usage
       ;;
     *)
@@ -206,7 +206,7 @@ function _venv_usage() {
 Usage:
   repo REPONAME               Change directories to the repo and activate the most recently activated venv there.
 
-  venv [info | help | usage]  Display this help
+  venv [-h | --help | help | info | usage]  Display this help
   venv go [COMPONENT]         Change directories and venvs to the given COMPONENT (which is auto-completeable)
                                  In infra-toolbox, 'COMPONENT' refers to an app or library.
                                  In other repos, this is not used and is equivalent to `venv on`.
@@ -257,12 +257,13 @@ function _venv_off() {
   [[ -z $_GIT_TOP ]] && return 1
   active_project_store="${_REPO_METADATA_PATH}/current_project.txt"
   [[ -e $active_project_store ]] && rm -f "${active_project_store}"
-  unset _REPO_ACTIVE_PROJECT_DIR
 
   if [[ $destroy == "destroy" ]] && [[ -n $_REPO_ACTIVE_PROJECT_DIR ]] ; then
     local venv_dir="${_REPO_METADATA_PATH}/${_REPO_ACTIVE_PROJECT_DIR}/venv"
+    echo "Destroying venv dir: ${venv_dir}"
     [[ -e $venv_dir ]] && _destroy_venv_dir "${venv_dir}"
   fi
+  unset _REPO_ACTIVE_PROJECT_DIR
 }
 
 
@@ -337,7 +338,7 @@ function cdpylibs() {
     echo "ERROR: No virtualenv is currently activated."
     return
   fi
-  local - dir="${VIRTUAL_ENV}/lib/python3.9/site-packages"
+  local - dir="${VIRTUAL_ENV}/lib/python3.11/site-packages"
   if [[ -d $dir ]]; then
     cd "${dir}"
   else
@@ -350,7 +351,7 @@ function cdpylibs64() {
     echo "ERROR: No virtualenv is currently activated."
     return
   fi
-  local - dir="${VIRTUAL_ENV}/lib64/python3.9/site-packages"
+  local - dir="${VIRTUAL_ENV}/lib64/python3.11/site-packages"
   if [[ -d $dir ]]; then
     cd "${dir}"
   else
